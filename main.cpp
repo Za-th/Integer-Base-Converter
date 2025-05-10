@@ -1,3 +1,16 @@
+//////////////////////////////////////////////////////
+// Name: Base Converter                             //
+//                                                  //
+// Author: Alistair Journeaux                       //
+// Contact: ajemail.main@gmail.com                  //
+//                                                  //
+// License: GNU General Public License (GPL) v3     //
+// (https://www.gnu.org/licenses/gpl-3.0.en.html)   //
+//                                                  //
+// Copyright (C) 2025 Alistair Journeaux            //
+//////////////////////////////////////////////////////
+
+
 #include <iostream>
 #include <fstream>
 #include <string>
