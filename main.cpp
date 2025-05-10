@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <sstream>
 #include <algorithm>
@@ -90,7 +91,16 @@ std::string toBase(int& base, int val) {
     return res;
 }
 
-int main() {
+// Splits input string by delimeter and places into arr.
+void splitByDelim(std::string& inp, std::string temp, std::vector<std::string>& arr, const char delim = ',') {
+    std::stringstream ssVals(inp);
+    while (std::getline(ssVals, temp, delim)) {
+        // only push if element is not in arr
+        if (std::find(arr.begin(), arr.end(), temp) == arr.end()) arr.push_back(temp);
+    }
+}
+
+int main(int argc, char *argv[]) {
     for (;;) {
         std::string inp;
         std::vector<std::string> vals;
@@ -106,36 +116,61 @@ int main() {
 
         std::cout << "\033[2J\033[1;1H";    // Clears the screen
 
-        // Get base values are in
-        std::cout << "Input base, in decimal form, integers are in. Negative bases begin with '-': ";
-        std::cin >> baseFrom;
+        // If there is a console argument then use inputs from a file
+        if (argc > 1) {
 
-        // Validate value's base
-        while (!validBase(baseFrom)) {
-            std::cout << "Invalid base " << baseFrom << std::endl;
-            std::cout << "Input base value is in: ";
+            std::ifstream file;
+            std::vector<std::string> args;
+
+            // Push file into vector
+            file.open(argv[1]);
+            if (!file.is_open()) { std::cout << "Unable to open file." << std::endl; return 0; }
+            while(getline(file, temp, '\n')) {
+                args.push_back(temp);
+            }
+            file.close();
+
+            // Must be 3 args
+            if (args.size() < 3) { std::cout << "Incorrect file layout." << std::endl; return 0;}
+
+            // Validate value's base
+            if (!validBase(args[0])) { std::cout << "Invalid base: " << args[0] << std::endl; return 0; }
+            baseFrom = args[0];
+
+            // Split values
+            splitByDelim(args[1], temp, vals);
+
+            // Split bases to convert to
+            splitByDelim(args[2], temp, basesTo);
+
+        } else {
+
+            // Get base values are in
+            std::cout << "Input base, in decimal form, integers are in. Negative bases begin with '-': ";
             std::cin >> baseFrom;
-        }
-        std::cout << std::endl;
 
-        // Get values
-        std::cout << "Input integers seperated by commas, negative integers begin with '-'." << std::endl;
-        std::cout << "Valid characters are 0-9, a-z, A-Z; where a=10 and A=36." << std::endl;
-        std::cout << "Note that characters must be valid for the base they are in. Do not input whitespace." << std::endl;
-        std::cin >> inp;
-        std::stringstream ssVals(inp);
-        while (std::getline(ssVals, temp, ',')) {
-            vals.push_back(temp);
-        }
+            // Validate value's base
+            while (!validBase(baseFrom)) {
+                std::cout << "Invalid base " << baseFrom << std::endl;
+                std::cout << "Input base value is in: ";
+                std::cin >> baseFrom;
+            }
+            std::cout << std::endl;
 
-        std::cout << std::endl;
+            // Get values
+            std::cout << "Input integers seperated by commas, negative integers begin with '-'." << std::endl;
+            std::cout << "Valid characters are 0-9, a-z, A-Z; where a=10 and A=36." << std::endl;
+            std::cout << "Note that characters must be valid for the base they are in. Do not input whitespace." << std::endl;
+            std::cin >> inp;
+            splitByDelim(inp, temp, vals);
 
-        // Get bases to convert to
-        std::cout << "Input bases to convert to in decimal form, seperated by commas. Negative bases begin with '-'." << std::endl;
-        std::cin >> inp;
-        std::stringstream ssBasesTo(inp);
-        while (std::getline(ssBasesTo, temp, ',')) {
-            basesTo.push_back(temp);
+            std::cout << std::endl;
+
+            // Get bases to convert to
+            std::cout << "Input bases to convert to in decimal form, seperated by commas. Negative bases begin with '-'." << std::endl;
+            std::cin >> inp;
+            splitByDelim(inp, temp, basesTo);
+
         }
 
         // Validate conversion bases
@@ -156,29 +191,70 @@ int main() {
 
         std::cout << "\033[2J\033[1;1H";    // Clears the screen
 
-        // Print invalid integers and bases
-        if (invalidVals.size() > 0) {
-            std::cout << "These values are invalid: ";
-            for (std::string e : invalidVals) {
-                std::cout << e << " ";
-            }
-            std::cout << std::endl;
-        }
-        if (invalidBasesTo.size() > 0) {
-            std::cout << "These bases are invalid: ";
-            for (std::string e : invalidBasesTo) {
-                std::cout << e << " ";
-            }
-            std::cout << std::endl;
-        }
+        // Output to file if user asked else print to console
+        std::string mode;
+        if (argc > 2) mode.assign(argv[2]);
+        if (mode == "output") {
 
-        std::cout << std::endl;
+            std::ofstream file;
+            file.open("output.txt");
 
-        // Print converted integers
-        for (std::string v : validVals) {
-            for (int b : iBasesTo) {
-                std::cout << v << " in base " << baseFrom << " converted to base " << b << " is " << toBase(b, toDec(iBaseFrom, v)) << std::endl;
+            if (invalidVals.size() > 0) {
+                file << "These values are invalid: ";
+                for (std::string e : invalidVals) {
+                    file << e << " ";
+                }
+                file << std::endl;
             }
+            if (invalidBasesTo.size() > 0) {
+                file << "These bases are invalid: ";
+                for (std::string e : invalidBasesTo) {
+                    file << e << " ";
+                }
+                file << std::endl;
+            }
+
+            file << std::endl;
+
+            for (std::string v : validVals) {
+                for (int b : iBasesTo) {
+                    file << v << " in base " << baseFrom << " converted to base " << b << " is " << toBase(b, toDec(iBaseFrom, v)) << std::endl;
+                }
+                file << std::endl;
+            }
+
+            file.close();
+            std::cout << "\033[2J\033[1;1H";    // Clears the screen
+            return 0;
+
+        } else {
+
+            // Print invalid integers and bases
+            if (invalidVals.size() > 0) {
+                std::cout << "These values are invalid: ";
+                for (std::string e : invalidVals) {
+                    std::cout << e << " ";
+                }
+                std::cout << std::endl;
+            }
+            if (invalidBasesTo.size() > 0) {
+                std::cout << "These bases are invalid: ";
+                for (std::string e : invalidBasesTo) {
+                    std::cout << e << " ";
+                }
+                std::cout << std::endl;
+            }
+
+            std::cout << std::endl;
+
+            // Print converted integers
+            for (std::string v : validVals) {
+                for (int b : iBasesTo) {
+                    std::cout << v << " in base " << baseFrom << " converted to base " << b << " is " << toBase(b, toDec(iBaseFrom, v)) << std::endl;
+                }
+                std::cout << std::endl;
+            }
+
         }
         
         std::cout << std::endl;

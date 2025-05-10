@@ -1,0 +1,11 @@
+These values are invalid: a b 2 s 
+These bases are invalid: a b --1  
+
+101 in base -2 converted to base -2 is 101
+101 in base -2 converted to base 10 is 5
+101 in base -2 converted to base 2 is 101
+
+11 in base -2 converted to base -2 is 11
+11 in base -2 converted to base 10 is -1
+11 in base -2 converted to base 2 is -1
+
