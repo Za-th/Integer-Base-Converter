@@ -114,8 +114,6 @@ int main(int argc, char *argv[]) {
         std::vector<int> iBasesTo;
         std::string temp;
 
-        std::cout << "\033[2J\033[1;1H";    // Clears the screen
-
         // If there is a console argument then use inputs from a file
         if (argc > 1) {
 
@@ -144,6 +142,8 @@ int main(int argc, char *argv[]) {
             splitByDelim(args[2], temp, basesTo);
 
         } else {
+
+            std::cout << "\033[2J\033[1;1H";    // Clears the screen
 
             // Get base values are in
             std::cout << "Input base, in decimal form, integers are in. Negative bases begin with '-': ";
@@ -189,9 +189,7 @@ int main(int argc, char *argv[]) {
             else { validVals.push_back(v); }
         }
 
-        std::cout << "\033[2J\033[1;1H";    // Clears the screen
-
-        // Output to file if user asked else print to console
+        // Output to file if user asked, else print to console
         std::string mode;
         if (argc > 2) mode.assign(argv[2]);
         if (mode == "output") {
@@ -224,10 +222,11 @@ int main(int argc, char *argv[]) {
             }
 
             file.close();
-            std::cout << "\033[2J\033[1;1H";    // Clears the screen
             return 0;
 
         } else {
+
+            std::cout << "\033[2J\033[1;1H";    // Clears the screen
 
             // Print invalid integers and bases
             if (invalidVals.size() > 0) {
