@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <algorithm>
-#include <cmath>
 #include <map>
 
 // TODO implement characters for bases higher than 62 ?
@@ -14,6 +14,7 @@ std::map<char, int> numMap{{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',
 {'x',33},{'y',34},{'z',35},{'A',36},{'B',37},{'C',38},{'D',39},{'E',40},{'F',41},{'G',42},{'H',43},{'I',44},{'J',45},{'K',46},{'L',47},{'M',48},{'N',49},{'O',50},{'P',51},
 {'Q',52},{'R',53},{'S',54},{'T',55},{'U',56},{'V',57},{'W',58},{'X',59},{'Y',60},{'Z',61}};
 
+// Checks characters in string to see if base is valid. 
 bool validBase(std::string& base) {
     if (base == "" | base == "0" | base == "1" | base == "-1" | base == "-") return false;
 
@@ -26,6 +27,7 @@ bool validBase(std::string& base) {
     return true;
 }
 
+// Checks characters in string with a given base to see if integer is valid.
 bool validNum(int& base, std::string& val) {
     if (val == "" | val == "-") return false;
 
@@ -41,6 +43,7 @@ bool validNum(int& base, std::string& val) {
     return true;
 }
 
+// Converts string to a decimal integer. String must be validated first.
 int toDec(int& base, std::string& val) {
     int res = 0;
     int mult = 1;
@@ -58,6 +61,7 @@ int toDec(int& base, std::string& val) {
     return res * (negative ? -1 : 1);
 }
 
+// Converts decimal integer val into given base system.
 std::string toBase(int& base, int val) {
     if (val == 0) return "0";
     
@@ -87,43 +91,107 @@ std::string toBase(int& base, int val) {
 }
 
 int main() {
-    std::string val;
-    std::string baseFrom;
-    std::string baseTo;
-    int iBaseFrom;
-    int iBaseTo;
+    for (;;) {
+        std::string inp;
+        std::vector<std::string> vals;
+        std::vector<std::string> invalidVals;
+        std::vector<std::string> validVals;
+        std::string baseFrom;
+        std::vector<std::string> basesTo;
+        std::vector<std::string> invalidBasesTo;
+        std::vector<std::string> validBasesTo;
+        int iBaseFrom;
+        std::vector<int> iBasesTo;
+        std::string temp;
 
-    std::cout << "Lowercase letters go before uppercase, so a=10 and A=36. Bases are in decimal only" << std::endl << std::endl;
+        std::cout << "\033[2J\033[1;1H";    // Clears the screen
 
-    std::cout << "Input value: ";
-    std::cin >> val;
-    std::cout << "Input base value is in: ";
-    std::cin >> baseFrom;
-    std::cout << "Input base to convert to: ";
-    std::cin >> baseTo;
-
-    while (!validBase(baseFrom)) {
-        std::cout << "Invalid base " << baseFrom << std::endl;
-        std::cout << "Input base value is in: ";
+        // Get base values are in
+        std::cout << "Input base, in decimal form, integers are in. Negative bases begin with '-': ";
         std::cin >> baseFrom;
+
+        // Validate value's base
+        while (!validBase(baseFrom)) {
+            std::cout << "Invalid base " << baseFrom << std::endl;
+            std::cout << "Input base value is in: ";
+            std::cin >> baseFrom;
+        }
+        std::cout << std::endl;
+
+        // Get values
+        std::cout << "Input integers seperated by commas, negative integers begin with '-'." << std::endl;
+        std::cout << "Valid characters are 0-9, a-z, A-Z; where a=10 and A=36." << std::endl;
+        std::cout << "Note that characters must be valid for the base they are in. Do not input whitespace." << std::endl;
+        std::cin >> inp;
+        std::stringstream ssVals(inp);
+        while (std::getline(ssVals, temp, ',')) {
+            vals.push_back(temp);
+        }
+
+        std::cout << std::endl;
+
+        // Get bases to convert to
+        std::cout << "Input bases to convert to in decimal form, seperated by commas. Negative bases begin with '-'." << std::endl;
+        std::cin >> inp;
+        std::stringstream ssBasesTo(inp);
+        while (std::getline(ssBasesTo, temp, ',')) {
+            basesTo.push_back(temp);
+        }
+
+        // Validate conversion bases
+        for (std::string b : basesTo) {
+            if (!validBase(b)) invalidBasesTo.push_back(b);
+            else validBasesTo.push_back(b);
+        }
+
+        // Get bases as ints
+        iBaseFrom = std::stoi(baseFrom);
+        for (std::string e : validBasesTo) iBasesTo.push_back(std::stoi(e));
+
+        // Validate values
+        for (std::string v : vals) {
+            if (!validNum(iBaseFrom, v)) { invalidVals.push_back(v); }
+            else { validVals.push_back(v); }
+        }
+
+        std::cout << "\033[2J\033[1;1H";    // Clears the screen
+
+        // Print invalid integers and bases
+        if (invalidVals.size() > 0) {
+            std::cout << "These values are invalid: ";
+            for (std::string e : invalidVals) {
+                std::cout << e << " ";
+            }
+            std::cout << std::endl;
+        }
+        if (invalidBasesTo.size() > 0) {
+            std::cout << "These bases are invalid: ";
+            for (std::string e : invalidBasesTo) {
+                std::cout << e << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl;
+
+        // Print converted integers
+        for (std::string v : validVals) {
+            for (int b : iBasesTo) {
+                std::cout << v << " in base " << baseFrom << " converted to base " << b << " is " << toBase(b, toDec(iBaseFrom, v)) << std::endl;
+            }
+        }
+        
+        std::cout << std::endl;
+
+        // User can reinput without rerunning
+        while (inp != "Start" & inp != "Quit") {
+            std::cout << "Input Start to begin or Quit to exit: ";
+            std::cin >> inp;
+        }
+
+        std::cout << "\033[2J\033[1;1H";    // Clears the screen
+        if (inp == "Quit") return 0;
     }
-
-    while (!validBase(baseTo)) {
-        std::cout << "Invalid base " << baseTo << std::endl;
-        std::cout << "Input base to convert to: ";
-        std::cin >> baseTo;
-    }
-
-    iBaseFrom = std::stoi(baseFrom);
-    iBaseTo = std::stoi(baseTo);
-
-    while (!validNum(iBaseFrom, val)) {
-        std::cout << "Invalid value " << val << " for base " << baseFrom << std::endl;
-        std::cout << "Input value: ";
-        std::cin >> val;
-    }
-
-    std::cout << val << " in base " << baseFrom << " converted to base " << baseTo << " is " << toBase(iBaseTo, toDec(iBaseFrom, val)) << std::endl;
 
     return 0;
 }
