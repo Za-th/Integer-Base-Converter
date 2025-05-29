@@ -17,6 +17,7 @@
 #include <sstream>
 #include <algorithm>
 #include <map>
+#include <vector>
 
 // TODO implement characters for bases higher than 62 ?
 
@@ -30,11 +31,11 @@ std::map<char, int> numMap{{'0',0},{'1',1},{'2',2},{'3',3},{'4',4},{'5',5},{'6',
 
 // Checks characters in string to see if base is valid. 
 bool validBase(std::string& base) {
-    if (base == "" | base == "0" | base == "1" | base == "-1" | base == "-") return false;
+    if (base == "" || base == "0" || base == "1" || base == "-1" || base == "-") return false;
 
-    if (base[0] != '-' & std::find(validNumerals.begin(), validNumerals.end(), base[0]) == validNumerals.end()) return false;
+    if (base[0] != '-' && std::find(validNumerals.begin(), validNumerals.end(), base[0]) == validNumerals.end()) return false;
 
-    for (uint i=1; i<base.size(); i++) {
+    for (unsigned int i=1; i<base.size(); i++) {
         if (std::find(validNumerals.begin(), validNumerals.end(), base[i]) == validNumerals.end()) return false;
     }
 
@@ -43,9 +44,9 @@ bool validBase(std::string& base) {
 
 // Checks characters in string with a given base to see if integer is valid.
 bool validNum(int& base, std::string& val) {
-    if (val == "" | val == "-") return false;
+    if (val == "" || val == "-") return false;
 
-    uint i=0;
+    unsigned int i=0;
     if (val[0] == '-') i = 1;
 
     while (i<val.size()) {
@@ -67,7 +68,7 @@ int toDec(int& base, std::string& val) {
         negative = true;
     }
 
-    for (uint i=0; i<val.size()- negative ? 1:0; i++) {
+    for (unsigned int i=0; i<val.size()-negative ? 1:0; i++) {
         res += mult * numMap[val[val.size()-i-1]];
         mult *= base;
     }
@@ -76,28 +77,30 @@ int toDec(int& base, std::string& val) {
 }
 
 // Converts decimal integer val into given base system.
-std::string toBase(int& base, int val) {
+std::string toBase(const int& base, int val) {
     if (val == 0) return "0";
     
     std::string res = "";
 
     bool negative = false;
-    if (val < 0 & base > 0) {
+    if (val < 0 && base > 0) {
         val *= -1;
         negative = true;
     }
 
-    for (;;) {
-        int mult = val / base;
+    int mult = 0;
+    do  {
+        mult = val / base;
         int remainder = val - mult*base;
         while (remainder < 0) {
             mult++;
             remainder = val - mult*base;
         }
         res += std::to_string(remainder);
-        if (mult == 0) break;
-        val = mult;
-    }
+        if (mult != 0){
+            val = mult;
+        }
+    } while (mult != 0);
     
     if (negative) res += '-';
     std::reverse(res.begin(), res.end());
@@ -105,7 +108,7 @@ std::string toBase(int& base, int val) {
 }
 
 // Splits input string by delimeter and places into arr.
-void splitByDelim(std::string& inp, std::string temp, std::vector<std::string>& arr, const char delim = ',') {
+void splitByDelim(const std::string& inp, std::string& temp, std::vector<std::string>& arr, const char delim = ',') {
     std::stringstream ssVals(inp);
     while (std::getline(ssVals, temp, delim)) {
         // only push if element is not in arr
@@ -272,13 +275,15 @@ int main(int argc, char *argv[]) {
         std::cout << std::endl;
 
         // User can reinput without rerunning
-        while (inp != "Start" & inp != "Quit") {
+        while (inp != "start" && inp != "quit") {
             std::cout << "Input Start to begin or Quit to exit: ";
             std::cin >> inp;
+            std::transform(inp.begin(), inp.end(), inp.begin(),
+              [](unsigned char c){ return std::tolower(c); });
         }
 
         std::cout << "\033[2J\033[1;1H";    // Clears the screen
-        if (inp == "Quit") return 0;
+        if (inp == "quit") return 0;
     }
 
     return 0;
